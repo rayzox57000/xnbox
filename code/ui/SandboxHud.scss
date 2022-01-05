@@ -133,3 +133,34 @@ InventoryIcon
 		}
 	}
 }
+
+
+
+
+// INVENTORY OVERRIDE
+
+InventoryBar {
+	left: 5px;
+	bottom: 5px;
+	align-items: flex-end;
+}
+
+InventoryIcon {
+	height: 30px;
+	background-color: rgba(black,0.8);
+	backdrop-filter: blur(10px);
+
+	.item-name {
+		text-align:left;
+	}
+
+	&.active {
+		height: 35px;
+		background-color: rgba(red,0.8);
+		transition: all 0.1s ease-out;
+
+		.slot-number {
+			color: darkred;
+		}
+	}
+}

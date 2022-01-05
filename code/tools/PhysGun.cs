@@ -194,6 +194,11 @@ public partial class PhysGun : Carriable
 		if ( IsBodyGrabbed( body ) )
 			return;
 
+
+		PropTouch prop = tr.Entity as PropTouch;
+
+		if(prop != null) { prop.setLastGrab(owner); }
+
 		GrabInit( body, eyePos, tr.EndPos, eyeRot );
 
 		GrabbedEntity = rootEnt;

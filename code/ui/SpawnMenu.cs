@@ -2,13 +2,18 @@
 using Sandbox.Tools;
 using Sandbox.UI;
 using Sandbox.UI.Construct;
-
+using Xnbox;
 
 [Library]
 public partial class SpawnMenu : Panel
 {
 	public static SpawnMenu Instance;
 	readonly Panel toollist;
+
+	public ButtonGroup tabs;
+	public Button PropButton;
+	public Button WeaponButton;
+
 
 	public SpawnMenu()
 	{
@@ -18,17 +23,25 @@ public partial class SpawnMenu : Panel
 
 		var left = Add.Panel( "left" );
 		{
-			var tabs = left.AddChild<ButtonGroup>();
+			tabs = left.AddChild<ButtonGroup>();
 			tabs.AddClass( "tabs" );
 
 			var body = left.Add.Panel( "body" );
 
 			{
 				var props = body.AddChild<SpawnList>();
-				tabs.SelectedButton = tabs.AddButtonActive( "Props", ( b ) => props.SetClass( "active", b ) );
+				PropButton = tabs.AddButtonActive( "📦 Props", ( b ) => props.SetClass( "active", b ) );
+				tabs.SelectedButton = PropButton;
 
 				var ents = body.AddChild<EntityList>();
-				tabs.AddButtonActive( "Entities", ( b ) => ents.SetClass( "active", b ) );
+				tabs.AddButtonActive( "🚀 Entities", ( b ) => ents.SetClass( "active", b ) );
+
+				var weapons = body.AddChild<WeaponList>();
+				WeaponButton = tabs.AddButtonActive( "🔫 Weapons", ( b ) => weapons.SetClass( "active", b ) );
+
+				var cars = body.AddChild<CarList>();
+				tabs.AddButtonActive("🚗 Vehicles", (b) => cars.SetClass("active", b));
+
 			}
 		}
 
@@ -77,10 +90,20 @@ public partial class SpawnMenu : Panel
 	public override void Tick()
 	{
 		base.Tick();
-
 		Parent.SetClass( "spawnmenuopen", Input.Down( InputButton.Menu ) );
-
 		UpdateActiveTool();
+
+		SandboxPlayer player = Local.Pawn as SandboxPlayer;
+		if (player == null) return;
+
+
+		bool noPVP = player.SelectedModeString != Mode.PvpMode.Name;
+
+		WeaponButton.SetClass("HIDE",noPVP);
+
+		if (noPVP && tabs.SelectedButton == WeaponButton){
+			tabs.SelectedButton = PropButton;
+		}
 	}
 
 	void UpdateActiveTool()

@@ -1,0 +1,97 @@
+.CENTER_FLEX {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    align-content: center;
+
+    &.COL {
+        flex-direction: column;
+    }
+}
+
+
+PropInfo {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    background-color: rgba(black,0.8);
+    backdrop-filter: blur(10px);
+    font-family: Poppins;
+    color: white;
+
+    .Window {
+        position: relative;
+        height: 500px;
+        width: 800px;
+        background-color: rgba(black,0.9);
+
+        & .Top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 50px;
+            width: 100%;
+            background-color: rgba(darkred,0.9);
+
+            & .Title {
+                position: absolute;
+                left: 5px;
+                top: 10px;
+                font-weight: bolder;
+                font-size: 20px;
+            }
+
+            & .Close {
+                background-color: rgb(82, 0, 0);
+                position: absolute;
+                right: 0;
+                top: 0;
+                height: 100%;
+                width: 50px;
+                font-size: 20px;
+                font-weight: bolder;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: rgb(100, 0, 0);
+                }
+            }
+        }
+
+        & .Bottom{
+            position:absolute;
+            top:60px;
+            height:430px;
+            left:10px;
+            width:780px;
+            background-color:red;
+
+            & .Right, & .Left{
+                background-color:blue;
+                position:absolute;
+                height:100%;
+                top:0;
+            }
+
+            & .Left {
+                width:25%;
+                left:0;
+            }
+
+            & .Right {
+                width:74%;
+                left:26%;
+            }
+
+        }
+    }
+}
+
+
+.HIDE {
+    pointer-events:none;
+    display: none;
+}

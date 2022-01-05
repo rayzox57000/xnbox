@@ -26,7 +26,7 @@ public partial class EntityList : Panel
 			btn.Style.BackgroundImage = Texture.Load( $"/entity/{entry.Name}.png", false );
 		};
 
-		var ents = Library.GetAllAttributes<Entity>().Where( x => x.Spawnable ).OrderBy( x => x.Title ).ToArray();
+		var ents = Library.GetAllAttributes<Entity>().Where( x => x.Spawnable && ((!x.Name.StartsWith( "weapon_" )) && (!x.Name.StartsWith("ent_car"))) ).OrderBy( x => x.Title ).ToArray();
 
 		foreach ( var entry in ents )
 		{

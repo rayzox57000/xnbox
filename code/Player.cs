@@ -1,4 +1,7 @@
-﻿using Sandbox;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Sandbox;
+using Xnbox;
 
 partial class SandboxPlayer : Player
 {
@@ -71,18 +74,24 @@ partial class SandboxPlayer : Player
 		Inventory.Add( new PhysGun(), true );
 		Inventory.Add( new GravGun() );
 		Inventory.Add( new Tool() );
-		Inventory.Add( new Pistol() );
+		//Inventory.Add( new Pistol() );
 		Inventory.Add( new Flashlight() );
-		Inventory.Add( new Fists() );
+		//Inventory.Add( new Fists() );
 
 		base.Respawn();
+	}
+
+	public void ForceRespawn()
+	{
+		Inventory.DeleteContents();
+		Respawn();
 	}
 
 	public override void OnKilled()
 	{
 		base.OnKilled();
 
-		if ( lastDamage.Flags.HasFlag( DamageFlags.Vehicle ) )
+		if (lastDamage.Flags.HasFlag( DamageFlags.Vehicle ) )
 		{
 			Particles.Create( "particles/impact.flesh.bloodpuff-big.vpcf", lastDamage.Position );
 			Particles.Create( "particles/impact.flesh-big.vpcf", lastDamage.Position );
@@ -103,12 +112,18 @@ partial class SandboxPlayer : Player
 		EnableAllCollisions = false;
 		EnableDrawing = false;
 
-		Inventory.DropActive();
+		Log.Info("KILLED");
+		//Inventory.DropActive();
 		Inventory.DeleteContents();
 	}
 
 	public override void TakeDamage( DamageInfo info )
 	{
+
+		if (IsCorrectPropPrevention(info) == true) { if (AntiPropKill(info) == true) { return; } }
+		else { if (GetCurrentModeByName().CanTakeDamage == false) { return; } }
+
+
 		if ( GetHitboxGroup( info.HitboxIndex ) == 1 )
 		{
 			info.Damage *= 10.0f;
@@ -143,7 +158,11 @@ partial class SandboxPlayer : Player
 
 	public ICamera GetActiveCamera()
 	{
-		if ( VehicleCamera != null ) return VehicleCamera;
+		if (VehicleCamera != null)
+		{
+			//Log.Info("VEHICLE CAMERA");
+			return VehicleCamera;
+		}
 
 		return MainCamera;
 	}
@@ -200,7 +219,7 @@ partial class SandboxPlayer : Player
 
 		if ( Input.Released( InputButton.Jump ) )
 		{
-			if ( timeSinceJumpReleased < 0.3f )
+			if ( timeSinceJumpReleased < 0.3f && GetCurrentModeByName().CanNoClip == true )
 			{
 				Game.Current?.DoPlayerNoclip( cl );
 			}
@@ -256,4 +275,5 @@ partial class SandboxPlayer : Player
 	//
 	//	return base.HasPermission( mode );
 	//	}
+
 }

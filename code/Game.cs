@@ -1,4 +1,5 @@
 ﻿using Sandbox;
+using Xnbox;
 
 partial class SandboxGame : Game
 {
@@ -20,6 +21,16 @@ partial class SandboxGame : Game
 		cl.Pawn = player;
 	}
 
+	public override void ClientDisconnect(Client cl, NetworkDisconnectionReason reason)
+	{
+
+		SandboxPlayer p = cl.Pawn as SandboxPlayer;
+
+		if (p != null) p.ModeCounterStop();
+
+		base.ClientJoined(cl);
+	}
+
 	protected override void OnDestroy()
 	{
 		base.OnDestroy();
@@ -38,7 +49,8 @@ partial class SandboxGame : Game
 			.Ignore( owner )
 			.Run();
 
-		var ent = new Prop();
+		var ent = new PropTouch();
+		ent.OwnerSpawn = owner;
 		ent.Position = tr.EndPos;
 		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRot.Angles().yaw, 0 ) ) * Rotation.FromAxis( Vector3.Up, 180 );
 		ent.SetModel( modelname );
@@ -53,10 +65,21 @@ partial class SandboxGame : Game
 		if ( owner == null )
 			return;
 
+		SandboxPlayer player = owner as SandboxPlayer;
+		if(player == null)
+			return;
+
 		var attribute = Library.GetAttribute( entName );
+		Log.Info(attribute.Name);
 
 		if ( attribute == null || !attribute.Spawnable )
 			return;
+
+		if (player.SelectedModeString != Mode.PvpMode.Name && attribute.Name.StartsWith("weapon_"))
+		{
+			Log.Info("CANT SPAWN WEAPON IN NO PVP MODE");
+			return;
+		}
 
 		var tr = Trace.Ray( owner.EyePos, owner.EyePos + owner.EyeRot.Forward * 200 )
 			.UseHitboxes()

@@ -175,3 +175,86 @@
         }
     }
 }
+
+
+
+
+// SPAWN MENU OVERRIDE
+
+spawnmenu {
+    .left, .right {
+        background-color: rgba(black,0.8);
+        backdrop-filter: blur(10px);
+
+        .body {
+            background-color: rgba(darkred,0.2);
+            border-radius: 0;
+        }
+
+        .tabs {
+            background-color: transparent;
+            padding-top: 5px;
+            margin-bottom: -0px !important;
+
+            button {
+                margin: 0;
+                opacity: 1;
+                background-color: rgba(red,0.2);
+
+                &.active, &:hover {
+                    background-color: rgba(red,0.4);
+                }
+
+                &:first-child {
+                    border-radius: 80px 0 0 0;
+                }
+
+                &:last-child {
+                    border-radius: 0;
+                }
+
+                &.HIDE {
+                    background-color: rgba(228, 137, 137,0.1);
+                    pointer-events: none;
+                    cursor: not-allowed;
+                    text-decoration: line-through;
+                }
+            }
+        }
+    }
+
+    .left {
+        border-radius: 25px 0 0 25px;
+
+        .body {
+            border-bottom-left-radius: 25px;
+        }
+    }
+
+    .right {
+        border-radius: 0 25px 25px 0;
+
+        .tabs {
+            .button:first-child {
+                border-top-left-radius: 0;
+            }
+
+            .button:last-child {
+                border-radius: 0 80px 0 0;
+            }
+        }
+
+        .body {
+            border-bottom-right-radius: 25px;
+        }
+    }
+}
+
+.spawnpage {
+    .icon{
+        transition:all 0.1s linear;
+    }
+    .icon:hover {
+        box-shadow: 0px 0px 15px 0.2px rgba(255,0,0,0.5);
+    }
+}

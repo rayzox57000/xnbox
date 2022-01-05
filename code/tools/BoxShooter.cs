@@ -1,4 +1,6 @@
-﻿namespace Sandbox.Tools
+﻿/*
+
+namespace Sandbox.Tools
 {
 	[Library( "tool_boxgun", Title = "Box Shooter", Description = "Shoot boxes", Group = "fun" )]
 	public class BoxShooter : BaseTool
@@ -35,3 +37,5 @@
 		}
 	}
 }
+
+*/
