@@ -128,6 +128,9 @@ public partial class PhysGun : Carriable
 
 		if ( !tr.Hit || !tr.Entity.IsValid() || tr.Entity.IsWorld ) return;
 
+		if (tr.Entity.Owner != Owner) return;
+
+
 		var rootEnt = tr.Entity.Root;
 		if ( !rootEnt.IsValid() ) return;
 
@@ -164,6 +167,7 @@ public partial class PhysGun : Carriable
 			.Run();
 
 		if ( !tr.Hit || !tr.Entity.IsValid() || tr.Entity.IsWorld || tr.StartedSolid ) return;
+		if (tr.Entity.Owner != Owner) return;
 
 		var rootEnt = tr.Entity.Root;
 		var body = tr.Body;

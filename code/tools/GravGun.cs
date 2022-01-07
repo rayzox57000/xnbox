@@ -107,6 +107,8 @@ public partial class GravGun : Carriable
 			if ( tr.Entity.PhysicsGroup == null )
 				return;
 
+			if (tr.Entity.Owner != Owner) return;
+
 			var modelEnt = tr.Entity as ModelEntity;
 			if ( !modelEnt.IsValid() )
 				return;

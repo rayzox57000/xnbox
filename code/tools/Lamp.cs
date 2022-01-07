@@ -1,4 +1,5 @@
-﻿namespace Sandbox.Tools
+﻿using Sandbox;
+namespace Sandbox.Tools
 {
 	[Library( "tool_lamp", Title = "Lamps", Description = "Directional light source that casts shadows", Group = "construction" )]
 	public partial class LampTool : BaseTool
@@ -41,6 +42,9 @@
 				var startPos = Owner.EyePos;
 				var dir = Owner.EyeRot.Forward;
 
+				SandboxPlayer player = Owner as SandboxPlayer;
+				if (player == null) return;
+
 				var tr = Trace.Ray( startPos, startPos + dir * MaxTraceDistance )
 					.Ignore( Owner )
 					.Run();
@@ -75,9 +79,13 @@
 					LightCookie = Texture.Load( "materials/effects/lightcookie.vtex" )
 				};
 
+				lamp.Owner = Owner;
+
 				lamp.SetModel( Model );
 				lamp.SetupPhysicsFromModel( PhysicsMotionType.Dynamic, false );
 				lamp.Position = tr.EndPos + -lamp.CollisionBounds.Center + tr.Normal * lamp.CollisionBounds.Size * 0.5f;
+
+				player.AddCustomUndo("LAMP", null, lamp as Entity);
 			}
 		}
 	}

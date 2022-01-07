@@ -1,4 +1,5 @@
-﻿namespace Sandbox.Tools
+﻿using Sandbox;
+namespace Sandbox.Tools
 {
 	[Library( "tool_wheel", Title = "Wheel", Description = "A wheel that you can turn on and off (but actually can't yet)", Group = "construction" )]
 	public partial class WheelTool : BaseTool
@@ -37,6 +38,9 @@
 				var startPos = Owner.EyePos;
 				var dir = Owner.EyeRot.Forward;
 
+				SandboxPlayer player = Owner as SandboxPlayer;
+				if (player == null) return;
+
 				var tr = Trace.Ray( startPos, startPos + dir * MaxTraceDistance )
 					.Ignore( Owner )
 					.Run();
@@ -45,6 +49,9 @@
 					return;
 
 				if ( !tr.Entity.IsValid() )
+					return;
+
+				if ((!tr.Entity.IsWorld) && tr.Entity.Owner != Owner)
 					return;
 
 				var attached = !tr.Entity.IsWorld && tr.Body.IsValid() && tr.Body.PhysicsGroup != null && tr.Body.Entity.IsValid();
@@ -71,12 +78,17 @@
 
 				ent.PhysicsBody.Mass = tr.Body.Mass;
 
+				ent.Owner = Owner;
+
 				ent.Joint = PhysicsJoint.Revolute
 					.From( ent.PhysicsBody )
 					.To( tr.Body )
 					.WithPivot( tr.EndPos )
 					.WithBasis( Rotation.LookAt( tr.Normal ) * Rotation.From( new Angles( 90, 0, 0 ) ) )
 					.Create();
+
+				player.AddCustomUndo("WHEEL", null, ent as Entity);
+
 			}
 		}
 	}

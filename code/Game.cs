@@ -1,4 +1,6 @@
 ﻿using Sandbox;
+using System.Collections.Generic;
+using System.Linq;
 using Xnbox;
 
 partial class SandboxGame : Game
@@ -40,8 +42,11 @@ partial class SandboxGame : Game
 	public static void Spawn( string modelname )
 	{
 		var owner = ConsoleSystem.Caller?.Pawn;
+		SandboxPlayer player = owner as SandboxPlayer;
 
 		if ( ConsoleSystem.Caller == null )
+			return;
+		if (player == null)
 			return;
 
 		var tr = Trace.Ray( owner.EyePos, owner.EyePos + owner.EyeRot.Forward * 500 )
@@ -50,11 +55,16 @@ partial class SandboxGame : Game
 			.Run();
 
 		var ent = new PropTouch();
+
+		ent.Owner = owner;
 		ent.OwnerSpawn = owner;
 		ent.Position = tr.EndPos;
 		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRot.Angles().yaw, 0 ) ) * Rotation.FromAxis( Vector3.Up, 180 );
 		ent.SetModel( modelname );
 		ent.Position = tr.EndPos - Vector3.Up * ent.CollisionBounds.Mins.z;
+
+		player.AddCustomUndo("PROP", null, ent as Entity);
+
 	}
 
 	[ServerCmd( "spawn_entity" )]
@@ -94,10 +104,29 @@ partial class SandboxGame : Game
 				return;
 		}
 
+		ent.Owner = owner;
 		ent.Position = tr.EndPos;
 		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRot.Angles().yaw, 0 ) );
 
+		player.AddCustomUndo("ENTITY", null, ent as Entity);
+
 		//Log.Info( $"ent: {ent}" );
+	}
+
+	[ServerCmd("undo_spawn")]
+	public static void UndoSpawn()
+	{
+		var owner = ConsoleSystem.Caller.Pawn;
+
+		if (owner == null)
+			return;
+
+		SandboxPlayer player = owner as SandboxPlayer;
+		if (player == null)
+			return;
+
+		player.UndoObject();
+
 	}
 
 	public override void DoPlayerNoclip( Client player )

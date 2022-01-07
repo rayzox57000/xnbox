@@ -1,4 +1,5 @@
-﻿namespace Sandbox.Tools
+﻿using Sandbox;
+namespace Sandbox.Tools
 {
 	[Library( "tool_light", Title = "Lights", Description = "A dynamic point light", Group = "construction" )]
 	public partial class LightTool : BaseTool
@@ -42,11 +43,18 @@
 				var startPos = Owner.EyePos;
 				var dir = Owner.EyeRot.Forward;
 
+				SandboxPlayer player = Owner as SandboxPlayer;
+				if (player == null) return;
+
 				var tr = Trace.Ray( startPos, startPos + dir * MaxTraceDistance )
 					.Ignore( Owner )
 					.Run();
 
 				if ( !tr.Hit || !tr.Entity.IsValid() )
+					return;
+
+
+				if ((!tr.Entity.IsWorld) && tr.Entity.Owner != Owner)
 					return;
 
 				CreateHitEffects( tr.EndPos );
@@ -71,10 +79,13 @@
 					//LightCookie = Texture.Load( "materials/effects/lightcookie.vtex" )
 				};
 
+				light.Owner = Owner;
 				light.UseFogNoShadows();
 				light.SetModel( Model );
 				light.SetupPhysicsFromModel( PhysicsMotionType.Dynamic, false );
 				light.Position = tr.EndPos + -light.CollisionBounds.Center + tr.Normal * light.CollisionBounds.Size * 0.5f;
+
+				player.AddCustomUndo("LIGHT", null, light as Entity);
 
 				if ( !useRope )
 					return;

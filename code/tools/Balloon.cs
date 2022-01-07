@@ -1,4 +1,6 @@
-﻿namespace Sandbox.Tools
+﻿using Sandbox;
+
+namespace Sandbox.Tools
 {
 	[Library( "tool_balloon", Title = "Balloons", Description = "Create Balloons!", Group = "construction" )]
 	public partial class BalloonTool : BaseTool
@@ -53,6 +55,9 @@
 				if ( !useRope && !Input.Pressed( InputButton.Attack2 ) )
 					return;
 
+				SandboxPlayer player = Owner as SandboxPlayer;
+				if (player == null) return;
+
 				var startPos = Owner.EyePos;
 				var dir = Owner.EyeRot.Forward;
 
@@ -71,14 +76,21 @@
 				if ( tr.Entity is BalloonEntity )
 					return;
 
+
+				if ((!tr.Entity.IsWorld) && tr.Entity.Owner != Owner)
+					return;
+
 				var ent = new BalloonEntity
 				{
 					Position = tr.EndPos,
 				};
 
+				ent.Owner = Owner;
 				ent.SetModel( "models/citizen_props/balloonregular01.vmdl" );
 				ent.PhysicsBody.GravityScale = -0.2f;
 				ent.RenderColor = Tint;
+
+				player.AddCustomUndo("BALLON", null, ent as Entity);
 
 				Tint = Color.Random;
 

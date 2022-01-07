@@ -29,6 +29,9 @@ namespace Sandbox.Tools
 				if ( tr.Entity is not ModelEntity modelEnt )
 					return;
 
+				if ((!tr.Entity.IsWorld) && tr.Entity.Owner != Owner)
+					return;
+
 				modelEnt.RenderColor = Color.Random;
 
 				CreateHitEffects( tr.EndPos );

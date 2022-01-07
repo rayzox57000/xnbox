@@ -35,6 +35,9 @@ namespace Sandbox.Tools
 				if ( !entity.IsValid() )
 					return;
 
+				if (entity.Owner != Owner)
+					return;
+
 				if ( entity.PhysicsGroup == null )
 					return;
 

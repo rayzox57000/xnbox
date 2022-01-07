@@ -43,6 +43,9 @@
 				var startPos = Owner.EyePos;
 				var dir = Owner.EyeRot.Forward;
 
+				SandboxPlayer player = Owner as SandboxPlayer;
+				if (player == null) return;
+
 				var tr = Trace.Ray( startPos, startPos + dir * MaxTraceDistance )
 					.Ignore( Owner )
 					.Run();
@@ -51,6 +54,9 @@
 					return;
 
 				if ( !tr.Entity.IsValid() )
+					return;
+
+				if ((!tr.Entity.IsWorld) && tr.Entity.Owner != Owner)
 					return;
 
 				var attached = !tr.Entity.IsWorld && tr.Body.IsValid() && tr.Body.PhysicsGroup != null && tr.Body.Entity.IsValid();
@@ -76,6 +82,9 @@
 					TargetBody = attached ? tr.Body : null,
 					Massless = massless
 				};
+				ent.Owner = Owner;
+
+				player.AddCustomUndo("THRUSTER", null, ent as Entity);
 
 				if ( attached )
 				{
