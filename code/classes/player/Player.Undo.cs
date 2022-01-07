@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xnbox;
+using System.Diagnostics;
 
 public delegate bool CallbackUndo(List<object> objects);
 
@@ -13,6 +14,29 @@ public delegate bool CallbackUndo(List<object> objects);
 partial class SandboxPlayer
 {
 	public List<object> Objects { get; set; } = new List<object>();
+	[Net] public string LastObjectOk { get; private set; } = "";
+	[Net] public int LastObjectOkUndo { get; private set; } = -1;
+
+	public string rnd()
+    {
+		var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+		var Charsarr = new char[8];
+		var random = new Random();
+
+		for (int i = 0; i < Charsarr.Length; i++)
+		{
+			Charsarr[i] = characters[random.Next(characters.Length)];
+		}
+
+		var resultString = new String(Charsarr);
+		return resultString;
+	}
+
+	public string ts()
+    {
+		DateTimeOffset now = (DateTimeOffset)DateTime.UtcNow;
+		return now.ToUnixTimeSeconds().ToString();
+	}
 
 	public void AddCustomUndo(string type, CallbackUndo callbackUndo = null, params object[] argslist)
 	{
@@ -21,14 +45,13 @@ partial class SandboxPlayer
 
 		foreach (object o in argslist)
 		{
-			Log.Info("add " + o);
 			list.Add(o);
 		}
 
-		Log.Info(callbackUndo == null);
-
 		CustomUndo cu = callbackUndo == null ? new CustomUndo(type, list) : new CustomUndo(type, list, callbackUndo);
 		Objects.Add(cu);
+		LastObjectOk = $"{cu.Type},{ts()},{rnd()}";
+		LastObjectOkUndo = 0;
 	}
 
 	public void AddParticles(Particles p)
@@ -60,9 +83,16 @@ partial class SandboxPlayer
 			{
 				var correct = cu.Launch();
 				Objects.RemoveAt(Objects.Count - 1);
-				if (correct == true) return;
+				if (correct == true)
+				{
+					LastObjectOk = $"{cu.Type},{ts()},{rnd()}";
+					LastObjectOkUndo = 1;
+					return;
+				}
 			}
 		}
+		LastObjectOkUndo = -1;
+		LastObjectOk = "";
 		UndoObject();
 		return;
 

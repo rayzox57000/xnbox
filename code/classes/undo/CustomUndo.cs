@@ -10,7 +10,7 @@ using Xnbox;
 
 public class CustomUndo
 {
-	private string Type { get; set; } = "";
+	public string Type { get; private set; } = "";
 	private List<object> list { get; set; } = new List<object>();
 	private readonly CallbackUndo Start;
 
@@ -19,7 +19,6 @@ public class CustomUndo
 		this.Type = type;
 		this.list = list;
 		this.Start = callbackundo;
-		Log.Error($"{this.Type} [ADDED]");
 	}
 
 	public CustomUndo(string type,List<object> list)
@@ -27,14 +26,11 @@ public class CustomUndo
 		this.Type = type;
 		this.list = list;
 		this.Start = DefaultCustomRemove.Remove;
-		Log.Error($"{this.Type} [ADDED]");
     }
 
 	public bool Launch()
     {
-		bool done = this.Start(this.list);
-		if (done == true) Log.Error($"{this.Type} [UNDO]");
-		return done;
+		return this.Start(this.list);
 	}
 
 }
