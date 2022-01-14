@@ -1,5 +1,15 @@
 {
-	"sharedassets": "*.*",
-	"type": "game",
-	"ident": "rayzoxisback.xnbox"
+  "SharedAssets": "*.*",
+  "Title": "Xnbox Game",
+  "Type": "game",
+  "Org": "facepunch",
+  "Ident": "xnbox",
+  "FullIdent": "rayzoxisback.xnbox",
+  "Schema": 1,
+  "NeedsUpgrade": false,
+  "HasAssets": true,
+  "AssetsPath": null,
+  "HasCode": true,
+  "CodePath": "code",
+  "RootNamespace": "Sandbox"
 }
