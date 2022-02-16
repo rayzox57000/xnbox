@@ -35,8 +35,8 @@ namespace Sandbox.Tools
 				if ( !Input.Pressed( InputButton.Attack1 ) )
 					return;
 
-				var startPos = Owner.EyePos;
-				var dir = Owner.EyeRot.Forward;
+				var startPos = Owner.EyePosition;
+				var dir = Owner.EyeRotation.Forward;
 
 				SandboxPlayer player = Owner as SandboxPlayer;
 				if (player == null) return;

@@ -3,7 +3,7 @@
 [Library( "weapon_fists", Title = "Fists", Spawnable = false )]
 partial class Fists : Weapon
 {
-	public override string ViewModelPath => "models/firstperson/temp_punch/temp_punch.vmdl";
+	public override string ViewModelPath => "models/first_person/first_person_arms.vmdl";
 	public override float PrimaryRate => 2.0f;
 	public override float SecondaryRate => 2.0f;
 
@@ -46,14 +46,21 @@ partial class Fists : Weapon
 		anim.SetParam( "aimat_weight", 1.0f );
 	}
 
+	public override void CreateViewModel()
+	{
+		base.CreateViewModel();
+
+		ViewModelEntity.SetAnimGraph( "models/first_person/first_person_arms_punching.vanmgrph" );
+	}
+
 	private bool MeleeAttack()
 	{
-		var forward = Owner.EyeRot.Forward;
+		var forward = Owner.EyeRotation.Forward;
 		forward = forward.Normal;
 
 		bool hit = false;
 
-		foreach ( var tr in TraceBullet( Owner.EyePos, Owner.EyePos + forward * 80, 20.0f ) )
+		foreach ( var tr in TraceBullet( Owner.EyePosition, Owner.EyePosition + forward * 80, 20.0f ) )
 		{
 			if ( !tr.Entity.IsValid() ) continue;
 

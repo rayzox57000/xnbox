@@ -7,10 +7,23 @@ namespace Sandbox.Tools
 	{
 		TimeSince timeSinceShoot;
 
+		string modelToShoot = "models/citizen_props/crate01.vmdl";
+
 		public override void Simulate()
 		{
 			if ( Host.IsServer )
 			{
+				if ( Input.Pressed( InputButton.Reload ) )
+				{
+					var tr = Trace.Ray( Owner.EyePosition, Owner.EyePosition + Owner.EyeRotation.Forward * 4000 ).Ignore( Owner ).Run();
+
+					if ( tr.Entity is ModelEntity ent && !string.IsNullOrEmpty( ent.GetModelName() ) )
+					{
+						modelToShoot = ent.GetModelName();
+						Log.Trace( $"Shooting model: {modelToShoot}" );
+					}
+				}
+
 				if ( Input.Pressed( InputButton.Attack1 ) )
 				{
 					ShootBox();
@@ -28,12 +41,12 @@ namespace Sandbox.Tools
 		{
 			var ent = new Prop
 			{
-				Position = Owner.EyePos + Owner.EyeRot.Forward * 50,
-				Rotation = Owner.EyeRot
+				Position = Owner.EyePosition + Owner.EyeRotation.Forward * 50,
+				Rotation = Owner.EyeRotation
 			};
 
-			ent.SetModel( "models/citizen_props/crate01.vmdl" );
-			ent.Velocity = Owner.EyeRot.Forward * 1000;
+			ent.SetModel( modelToShoot );
+			ent.Velocity = Owner.EyeRotation.Forward * 1000;
 		}
 	}
 }

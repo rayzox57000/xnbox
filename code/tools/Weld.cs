@@ -15,8 +15,8 @@ using System.Linq;
 
 			using ( Prediction.Off() )
 			{
-				var startPos = Owner.EyePos;
-				var dir = Owner.EyeRot.Forward;
+				var startPos = Owner.EyePosition;
+				var dir = Owner.EyeRotation.Forward;
 
 				SandboxPlayer player = Owner as SandboxPlayer;
 				if (player == null) return;

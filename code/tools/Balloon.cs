@@ -58,8 +58,8 @@ namespace Sandbox.Tools
 				SandboxPlayer player = Owner as SandboxPlayer;
 				if (player == null) return;
 
-				var startPos = Owner.EyePos;
-				var dir = Owner.EyeRot.Forward;
+				var startPos = Owner.EyePosition;
+				var dir = Owner.EyeRotation.Forward;
 
 				var tr = Trace.Ray( startPos, startPos + dir * MaxTraceDistance )
 					.Ignore( Owner )

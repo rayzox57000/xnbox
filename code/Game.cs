@@ -10,7 +10,8 @@ partial class SandboxGame : Game
 		if ( IsServer )
 		{
 			// Create the HUD
-			_ = new SandboxHud();
+			var hud = new SandboxHud();
+			hud.Parent = this; // Do not delete me on map cleanup
 		}
 	}
 
@@ -49,7 +50,7 @@ partial class SandboxGame : Game
 		if (player == null)
 			return;
 
-		var tr = Trace.Ray( owner.EyePos, owner.EyePos + owner.EyeRot.Forward * 500 )
+		var tr = Trace.Ray( owner.EyePosition, owner.EyePosition + owner.EyeRotation.Forward * 500 )
 			.UseHitboxes()
 			.Ignore( owner )
 			.Run();
@@ -59,7 +60,7 @@ partial class SandboxGame : Game
 		ent.Owner = owner;
 		ent.OwnerSpawn = owner;
 		ent.Position = tr.EndPos;
-		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRot.Angles().yaw, 0 ) ) * Rotation.FromAxis( Vector3.Up, 180 );
+		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw, 0 ) ) * Rotation.FromAxis( Vector3.Up, 180 );
 		ent.SetModel( modelname );
 		ent.Position = tr.EndPos - Vector3.Up * ent.CollisionBounds.Mins.z;
 
@@ -91,7 +92,7 @@ partial class SandboxGame : Game
 			return;
 		}
 
-		var tr = Trace.Ray( owner.EyePos, owner.EyePos + owner.EyeRot.Forward * 200 )
+		var tr = Trace.Ray( owner.EyePosition, owner.EyePosition + owner.EyeRotation.Forward * 200 )
 			.UseHitboxes()
 			.Ignore( owner )
 			.Size( 2 )
@@ -106,7 +107,7 @@ partial class SandboxGame : Game
 
 		ent.Owner = owner;
 		ent.Position = tr.EndPos;
-		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRot.Angles().yaw, 0 ) );
+		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw, 0 ) );
 
 		player.AddCustomUndo("ENTITY", null, ent as Entity);
 
@@ -146,9 +147,9 @@ partial class SandboxGame : Game
 		}
 	}
 
-	[ClientCmd( "debug_write" )]
-	public static void Write()
+	[AdminCmd( "respawn_entities" )]
+	public static void RespawnEntities()
 	{
-		ConsoleSystem.Run( "quit" );
+		EntityManager.CleanUpMap( EntityManager.DefaultCleanupFilter );
 	}
 }
