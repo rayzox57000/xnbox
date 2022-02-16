@@ -33,7 +33,6 @@ public partial class CarPlate : Prop
 
 	public override void ClientSpawn()
 	{
-		string p = "models/car/plate/sym/{{name}}.vmdl";
 		randomPlate = RandomString(6);
 		char[] p1 = randomPlate.ToCharArray();
 

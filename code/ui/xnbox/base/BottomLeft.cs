@@ -84,8 +84,8 @@ partial class BottomLeft : Panel
 
 		if (player.Vehicle == null)
 		{
-			var eyePos = player.EyePos;
-			var eyeRot = player.EyeRot;
+			var eyePos = player.EyePosition;
+			var eyeRot = player.EyeRotation;
 			var tr = Trace.Ray(eyePos, eyePos + eyeRot.Forward * 5000).Radius(2).Ignore(player).EntitiesOnly().Run();
 			EyeEntity = tr.Entity as ModelEntity;
 		}
@@ -101,7 +101,7 @@ partial class BottomLeft : Panel
 			if (p != null)
 			{
 				sp = p.OwnerSpawn as SandboxPlayer;
-				path = EyeEntity.GetModel().Name;
+				path = EyeEntity.GetModelName();
 				if(sp != null) CN = $"OWNER : {sp.Client.Name} <{sp.Client.PlayerId}>";
 				if (sp != null) MN = $"MODEL NAME : {Path.GetFileNameWithoutExtension(path)}";
 
@@ -115,9 +115,7 @@ partial class BottomLeft : Panel
 					PropIcon.SetTexture($"{path}_c.png");
 				}
 				catch (Exception e)
-				{
-					
-				}
+				{}
 			} else if (sp == null)
                 {
 					PropIcon.SetClass("HIDE", true);
