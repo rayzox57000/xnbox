@@ -94,7 +94,7 @@ public partial class CarEntity : Prop, IUse
 		backRight = new CarWheel( this );
 	}
 
-	[Net] public Player driver { get; private set; }
+	[Net] public Player Driver { get; private set; }
 
 	private ModelEntity chassis_axle_rear;
 	private ModelEntity chassis_axle_front;
@@ -200,6 +200,8 @@ public partial class CarEntity : Prop, IUse
 
 		var modelName = "models/car/car.vmdl";
 		if (modelNamePath != null) modelName = startModelPath + modelNamePath;	// RZ ADD
+
+		Components.Create<CarCamera>();
 
 		SetModel( modelName );
 
@@ -360,7 +362,7 @@ public partial class CarEntity : Prop, IUse
 	{
 		base.OnDestroy();
 
-		if ( driver is SandboxPlayer player )
+		if ( Driver is SandboxPlayer player )
 		{
 			RemoveDriver( player );
 		}
@@ -374,40 +376,77 @@ public partial class CarEntity : Prop, IUse
 	[Event.Tick.Server]
 	protected void Tick()
 	{
-		if ( driver is SandboxPlayer player )
+		if ( Driver is SandboxPlayer player && player.LifeState != LifeState.Alive )
 		{
-			if ( player.LifeState != LifeState.Alive || player.Vehicle != this )
-			{
-				RemoveDriver( player );
-			}
+			RemoveDriver( player );
 		}
 	}
 
-	public override void Simulate( Client owner )
+	public override void Simulate( Client client )
 	{
-		if ( owner == null ) return;
+		SimulateDriver( client );
+
 		if ( !IsServer ) return;
 
-		using ( Prediction.Off() )
+		currentInput.Reset();
+		currentInput.throttle = (Input.Down( InputButton.Forward ) ? 1 : 0) + (Input.Down( InputButton.Back ) ? -1 : 0);
+		currentInput.turning = (Input.Down( InputButton.Left ) ? 1 : 0) + (Input.Down( InputButton.Right ) ? -1 : 0);
+		currentInput.breaking = (Input.Down( InputButton.Jump ) ? 1 : 0);
+		currentInput.tilt = (Input.Down( InputButton.Run ) ? 1 : 0) + (Input.Down( InputButton.Duck ) ? -1 : 0);
+		currentInput.roll = (Input.Down( InputButton.Left ) ? 1 : 0) + (Input.Down( InputButton.Right ) ? -1 : 0);
+
+		//	EyeRot = Input.Rotation;
+		//	EyePosLocal = Vector3.Up * (64 - 10) * car.Scale;
+		//	Velocity = car.Velocity;
+
+		//SetTag( "noclip" );
+		//SetTag( "sitting" );
+	}
+
+	void SimulateDriver( Client client )
+	{
+		if ( !Driver.IsValid() ) return;
+
+		if ( IsServer && Input.Pressed( InputButton.Use ) )
 		{
-			currentInput.Reset();
-
-			if ( Input.Pressed( InputButton.Use ) )
-			{
-				if ( owner.Pawn is SandboxPlayer player && !player.IsUseDisabled() )
-				{
-					RemoveDriver( player );
-
-					return;
-				}
-			}
-
-			currentInput.throttle = (Input.Down( InputButton.Forward ) ? 1 : 0) + (Input.Down( InputButton.Back ) ? -1 : 0);
-			currentInput.turning = (Input.Down( InputButton.Left ) ? 1 : 0) + (Input.Down( InputButton.Right ) ? -1 : 0);
-			currentInput.breaking = (Input.Down( InputButton.Jump ) ? 1 : 0);
-			currentInput.tilt = (Input.Down( InputButton.Run ) ? 1 : 0) + (Input.Down( InputButton.Duck ) ? -1 : 0);
-			currentInput.roll = (Input.Down( InputButton.Left ) ? 1 : 0) + (Input.Down( InputButton.Right ) ? -1 : 0);
+			RemoveDriver( Driver as SandboxPlayer );
+			return;
 		}
+
+		// TODO - at this point the driver isn't actually predicted
+		// because they're not our pawn. We need a pawn stack or some shit.
+
+		//driver.Simulate( client );
+		//Driver.ActiveChild?.Simulate( client );
+
+		Driver.SetAnimParameter( "b_grounded", true );
+		Driver.SetAnimParameter( "b_sit", true );
+
+		var aimRotation = Input.Rotation.Clamp( Driver.Rotation, 90 );
+
+		var aimPos = Driver.EyePosition + aimRotation.Forward * 200;
+		var localPos = new Transform( Driver.EyePosition, Driver.Rotation ).PointToLocal( aimPos );
+
+		Driver.SetAnimParameter( "aim_eyes", localPos );
+		Driver.SetAnimParameter( "aim_head", localPos );
+		Driver.SetAnimParameter( "aim_body", localPos );
+
+		if ( Driver.ActiveChild is BaseCarriable carry )
+		{
+			//carry.SimulateAnimator( null );
+		}
+		else
+		{
+			Driver.SetAnimParameter( "holdtype", 0 );
+			Driver.SetAnimParameter( "aim_body_weight", 0.5f );
+		}
+	}
+
+	public override void FrameSimulate( Client client )
+	{
+		base.FrameSimulate( client );
+
+		Driver?.FrameSimulate( client );
 	}
 
 	[Event.Physics.PreStep]
@@ -469,7 +508,7 @@ public partial class CarEntity : Prop, IUse
 
 		if ( fullyGrounded )
 		{
-			body.Velocity += PhysicsWorld.Gravity * dt;
+			body.Velocity += Map.Physics.Gravity * dt;
 		}
 
 		body.GravityScale = fullyGrounded ? 0 : 1;
@@ -523,7 +562,7 @@ public partial class CarEntity : Prop, IUse
 				.Run();
 
 			if ( debug_car )
-				DebugOverlay.Line( tr.StartPos, tr.EndPos, tr.Hit ? Color.Red : Color.Green );
+				DebugOverlay.Line( tr.StartPosition, tr.EndPosition, tr.Hit ? Color.Red : Color.Green );
 
 			canAirControl = !tr.Hit;
 		}
@@ -537,7 +576,7 @@ public partial class CarEntity : Prop, IUse
 				.Run();
 
 			if ( debug_car )
-				DebugOverlay.Line( tr.StartPos, tr.EndPos );
+				DebugOverlay.Line( tr.StartPosition, tr.EndPosition );
 
 			bool dampen = false;
 
@@ -641,7 +680,7 @@ public partial class CarEntity : Prop, IUse
 
 	private void RemoveDriver( SandboxPlayer player )
 	{
-		driver = null;
+		Driver = null;
 		timeSinceDriverLeft = 0;
 
 		ResetInput();
@@ -649,10 +688,6 @@ public partial class CarEntity : Prop, IUse
 		if ( !player.IsValid() )
 			return;
 
-		player.Vehicle = null;
-		player.VehicleController = null;
-		player.VehicleAnimator = null;
-		player.VehicleCamera = null;
 		player.Parent = null;
 
 		if ( player.PhysicsBody.IsValid() )
@@ -660,23 +695,23 @@ public partial class CarEntity : Prop, IUse
 			player.PhysicsBody.Enabled = true;
 			player.PhysicsBody.Position = player.Position;
 		}
+
+		player.Client.Pawn = player;
 	}
 
 	public bool OnUse( Entity user )
 	{
-		if ( user is SandboxPlayer player && player.Vehicle == null && timeSinceDriverLeft > 1.0f )
+		if ( user is SandboxPlayer player && timeSinceDriverLeft > 1.0f )
 		{
-			player.Vehicle = this;
-			player.VehicleController = new CarController();
-			player.VehicleAnimator = new CarAnimator();
-			player.VehicleCamera = new CarCamera();
 			player.Parent = this;
 			player.LocalPosition = (Vector3.Up * this.DriverPositionUp) + (Vector3.Left * this.DriverPositionLeft) + (Vector3.Right * this.DriverPositionRight) + (Vector3.Down * this.DriverPositionDown) + (Vector3.Forward * this.DriverPositionForward);
 			player.LocalRotation = Rotation.Identity;
 			player.LocalScale = 1;
 			player.PhysicsBody.Enabled = false;
 
-			driver = player;
+			Driver = player;
+
+			player.Client.Pawn = this;
 		}
 
 		return false;
@@ -684,7 +719,7 @@ public partial class CarEntity : Prop, IUse
 
 	public bool IsUsable( Entity user )
 	{
-		return driver == null;
+		return Driver == null;
 	}
 
 	public override void StartTouch( Entity other )
@@ -702,7 +737,7 @@ public partial class CarEntity : Prop, IUse
 		if ( !body.IsValid() )
 			return;
 
-		if ( other is SandboxPlayer player && player.Vehicle == null )
+		if ( other is SandboxPlayer player )
 		{
 			var speed = body.Velocity.Length;
 			var forceOrigin = Position + Rotation.Down * Rand.Float( 20, 30 );
@@ -712,7 +747,7 @@ public partial class CarEntity : Prop, IUse
 			OnPhysicsCollision( new CollisionEventData
 			{
 				Entity = player,
-				Pos = player.Position + Vector3.Up * 50,
+				Position = player.Position + Vector3.Up * 50,
 				Velocity = velocity,
 				PreVelocity = velocity,
 				PostVelocity = velocity,
@@ -727,10 +762,8 @@ public partial class CarEntity : Prop, IUse
 		if ( !IsServer )
 			return;
 
-		if ( eventData.Entity is SandboxPlayer player && player.Vehicle != null )
-		{
+		if ( eventData.Entity is SandboxPlayer )
 			return;
-		}
 
 		var propData = GetModelPropData();
 
@@ -750,8 +783,8 @@ public partial class CarEntity : Prop, IUse
 				eventData.Entity.TakeDamage( DamageInfo.Generic( damage )
 					.WithFlag( DamageFlags.PhysicsImpact )
 					.WithFlag( DamageFlags.Vehicle )
-					.WithAttacker( driver != null ? driver : this, driver != null ? this : null )
-					.WithPosition( eventData.Pos )
+					.WithAttacker( Driver != null ? Driver : this, Driver != null ? this : null )
+					.WithPosition( eventData.Position )
 					.WithForce( eventData.PreVelocity ) );
 
 				if ( eventData.Entity.LifeState == LifeState.Dead && eventData.Entity is not SandboxPlayer )
@@ -762,4 +795,5 @@ public partial class CarEntity : Prop, IUse
 			}
 		}
 	}
+
 }

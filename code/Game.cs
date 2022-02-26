@@ -55,23 +55,30 @@ partial class SandboxGame : Game
 			.Ignore( owner )
 			.Run();
 
-		var ent = new PropTouch();
+		var model = Model.Load( modelname );
+		if ( model == null || model.IsError )
+			return;
 
-		ent.Owner = owner;
-		ent.OwnerSpawn = owner;
-		ent.Position = tr.EndPos;
-		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw, 0 ) ) * Rotation.FromAxis( Vector3.Up, 180 );
-		ent.SetModel( modelname );
-		ent.Position = tr.EndPos - Vector3.Up * ent.CollisionBounds.Mins.z;
+		var ent = new PropTouch
+		{
+			Owner: owner,
+			OwnerSpawn: owner,
+			Position = tr.EndPosition + Vector3.Down * model.PhysicsBounds.Mins.z,
+			Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw, 0 ) ) * Rotation.FromAxis( Vector3.Up, 180 ),
+			Model = model
+		};
 
-		player.AddCustomUndo("PROP", null, ent as Entity);
+		// Let's make sure physics are ready to go instead of waiting
+		ent.SetupPhysicsFromModel( PhysicsMotionType.Dynamic );
+
+	 player.AddCustomUndo("PROP", null, ent as Entity);
 
 	}
 
 	[ServerCmd( "spawn_entity" )]
 	public static void SpawnEntity( string entName )
 	{
-		var owner = ConsoleSystem.Caller.Pawn;
+		var owner = ConsoleSystem.Caller.Pawn as Player;
 
 		if ( owner == null )
 			return;
@@ -106,7 +113,7 @@ partial class SandboxGame : Game
 		}
 
 		ent.Owner = owner;
-		ent.Position = tr.EndPos;
+		ent.Position = tr.EndPosition;
 		ent.Rotation = Rotation.From( new Angles( 0, owner.EyeRotation.Angles().yaw, 0 ) );
 
 		player.AddCustomUndo("ENTITY", null, ent as Entity);
@@ -150,6 +157,6 @@ partial class SandboxGame : Game
 	[AdminCmd( "respawn_entities" )]
 	public static void RespawnEntities()
 	{
-		EntityManager.CleanUpMap( EntityManager.DefaultCleanupFilter );
+		Map.Reset( DefaultCleanupFilter );
 	}
 }

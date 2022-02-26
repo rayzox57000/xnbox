@@ -80,7 +80,7 @@ using System.Linq;
 					return;
 				}
 
-				CreateHitEffects( tr.EndPos );
+				CreateHitEffects( tr.EndPosition );
 			}
 		}
 

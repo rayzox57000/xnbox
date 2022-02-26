@@ -51,10 +51,10 @@ namespace Sandbox.Tools
 				{
 					targetBody = tr.Body;
 					targetBone = tr.Bone;
-					globalOrigin1 = tr.EndPos;
-					localOrigin1 = tr.Body.Transform.PointToLocal(globalOrigin1);
+					globalOrigin1 = tr.EndPosition;
+					localOrigin1 = tr.Body.Transform.PointToLocal( globalOrigin1 );
 
-					CreateHitEffects(tr.EndPos);
+					CreateHitEffects( tr.EndPosition );
 
 					return;
 				}
@@ -64,16 +64,16 @@ namespace Sandbox.Tools
 
 				var rope = Particles.Create("particles/rope.vpcf");
 
-				if (targetBody.Entity.IsWorld)
+				if ( targetBody.GetEntity().IsWorld )
 				{
 					rope.SetPosition(0, localOrigin1);
 				}
 				else
 				{
-					rope.SetEntityBone(0, targetBody.Entity, targetBone, new Transform(localOrigin1 * (1.0f / targetBody.Entity.Scale)));
+					rope.SetEntityBone( 0, targetBody.GetEntity(), targetBone, new Transform( localOrigin1 * (1.0f / targetBody.GetEntity().Scale) ) );
 				}
 
-				var localOrigin2 = tr.Body.Transform.PointToLocal(tr.EndPos);
+				var localOrigin2 = tr.Body.Transform.PointToLocal( tr.EndPosition );
 
 				if (tr.Entity.IsWorld)
 				{
@@ -81,31 +81,22 @@ namespace Sandbox.Tools
 				}
 				else
 				{
-					rope.SetEntityBone(1, tr.Body.Entity, tr.Bone, new Transform(localOrigin2 * (1.0f / tr.Entity.Scale)));
+					rope.SetEntityBone( 1, tr.Body.GetEntity(), tr.Bone, new Transform( localOrigin2 * (1.0f / tr.Entity.Scale) ) );
 				}
 
-				var spring = PhysicsJoint.Spring
-					.From(targetBody, localOrigin1)
-					.To(tr.Body, localOrigin2)
-					.WithFrequency(5.0f)
-					.WithDampingRatio(0.7f)
-					.WithReferenceMass(targetBody.Mass)
-					.WithMinRestLength(0)
-					.WithMaxRestLength(tr.EndPos.Distance(globalOrigin1))
-					.WithCollisionsEnabled()
-					.Create();
-
-
+				var spring = PhysicsJoint.CreateLength( targetBody.LocalPoint( localOrigin1 ), tr.Body.LocalPoint( localOrigin2 ), tr.EndPosition.Distance( globalOrigin1 ) );
+				spring.SpringLinear = new( 5, 0.7f );
+				spring.Collisions = true;
 				spring.EnableAngularConstraint = false;
-				spring.OnBreak(() =>
+				spring.OnBreak += () =>
 				{
 					rope?.Destroy(true);
 					spring.Remove();
-				});
+				};
 
 				player.AddCustomUndo("ROPE", RemoveRope.Remove, spring, rope);
 
-				CreateHitEffects(tr.EndPos);
+				CreateHitEffects( tr.EndPosition );
 
 				Reset();
 			}

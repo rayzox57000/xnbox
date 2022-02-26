@@ -34,7 +34,7 @@ namespace Sandbox.Tools
 
 				modelEnt.RenderColor = Color.Random;
 
-				CreateHitEffects( tr.EndPos );
+				CreateHitEffects( tr.EndPosition );
 			}
 		}
 	}

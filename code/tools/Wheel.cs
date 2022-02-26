@@ -54,12 +54,12 @@ namespace Sandbox.Tools
 				if ((!tr.Entity.IsWorld) && tr.Entity.Owner != Owner)
 					return;
 
-				var attached = !tr.Entity.IsWorld && tr.Body.IsValid() && tr.Body.PhysicsGroup != null && tr.Body.Entity.IsValid();
+				var attached = !tr.Entity.IsWorld && tr.Body.IsValid() && tr.Body.PhysicsGroup != null && tr.Body.GetEntity().IsValid();
 
 				if ( attached && tr.Entity is not Prop )
 					return;
 
-				CreateHitEffects( tr.EndPos );
+				CreateHitEffects( tr.EndPosition );
 
 				if ( tr.Entity is WheelEntity )
 				{
@@ -70,25 +70,15 @@ namespace Sandbox.Tools
 
 				var ent = new WheelEntity
 				{
-					Position = tr.EndPos,
+					Position = tr.EndPosition,
 					Rotation = Rotation.LookAt( tr.Normal ) * Rotation.From( new Angles( 0, 90, 0 ) ),
 				};
 
 				ent.SetModel( "models/citizen_props/wheel01.vmdl" );
 
 				ent.PhysicsBody.Mass = tr.Body.Mass;
-
-				ent.Owner = Owner;
-
-				ent.Joint = PhysicsJoint.Revolute
-					.From( ent.PhysicsBody )
-					.To( tr.Body )
-					.WithPivot( tr.EndPos )
-					.WithBasis( Rotation.LookAt( tr.Normal ) * Rotation.From( new Angles( 90, 0, 0 ) ) )
-					.Create();
-
+				ent.Joint = PhysicsJoint.CreateHinge( ent.PhysicsBody, tr.Body, tr.EndPosition, tr.Normal );
 				player.AddCustomUndo("WHEEL", null, ent as Entity);
-
 			}
 		}
 	}

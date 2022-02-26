@@ -59,12 +59,12 @@
 				if ((!tr.Entity.IsWorld) && tr.Entity.Owner != Owner)
 					return;
 
-				var attached = !tr.Entity.IsWorld && tr.Body.IsValid() && tr.Body.PhysicsGroup != null && tr.Body.Entity.IsValid();
+				var attached = !tr.Entity.IsWorld && tr.Body.IsValid() && tr.Body.PhysicsGroup != null && tr.Body.GetEntity().IsValid();
 
 				if ( attached && tr.Entity is not Prop )
 					return;
 
-				CreateHitEffects( tr.EndPos );
+				CreateHitEffects( tr.EndPosition );
 
 				if ( tr.Entity is ThrusterEntity )
 				{
@@ -75,7 +75,7 @@
 
 				var ent = new ThrusterEntity
 				{
-					Position = tr.EndPos,
+					Position = tr.EndPosition,
 					Rotation = Rotation.LookAt( tr.Normal, dir ) * Rotation.From( new Angles( 90, 0, 0 ) ),
 					PhysicsEnabled = !attached,
 					EnableSolidCollisions = !attached,
@@ -88,7 +88,7 @@
 
 				if ( attached )
 				{
-					ent.SetParent( tr.Body.Entity, tr.Body.PhysicsGroup.GetBodyBoneName( tr.Body ) );
+					ent.SetParent( tr.Body.GetEntity(), tr.Body.GroupName );
 				}
 
 				ent.SetModel( "models/thruster/thrusterprojector.vmdl" );
